@@ -58,7 +58,7 @@ class TradingEnvironment(gym.Env):
 
         self.forecast_length = forecast_length
         self.confidence_interval =confidence_interval
-        self.obs_shape = (1, 5 + len(self.df.columns)-1 + (self.forecast_length * 3))
+        self.obs_shape = (1, 5 + len(self.df.columns) + (self.forecast_length * 3))
 
         # Actions: from 0 to 3 means "buy" 1 or 0.5 or 0.33 or 0.25 amount
         #          from 4 to 7 means "sell" 1 or 0.5 or 0.33 or 0.25 amount
