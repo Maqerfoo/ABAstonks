@@ -229,6 +229,9 @@ class TradingEnvironment(gym.Env):
             self.viewer.render(self.current_step,
                                self.net_worths, self.benchmarks, self.trades)
 
+    def return_net_worth(self):
+        return self.net_worths
+
     def close(self):
         if self.viewer is not None:
             self.viewer.close()
