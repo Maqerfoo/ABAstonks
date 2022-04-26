@@ -28,10 +28,12 @@ class TradingEnvironment(gym.Env):
         self.commission = commission
         self.reward_function = reward_function
         data=data.reset_index(level=0) #isws na mh xreiazetai telika edw
-        self.df = data[['Date','Open', 'High', 'Low', 'Close',"CCI",'Volume',"EWMA_10", "EWMA_20", "EWMA_50", "EWMA_100", "rsi_14", "Momentum(10)", "MACD", "MA_(10)", "MA_(20)", "MA_(50)", "MA_(100)", "ADX", "+DMI","-DMI", "Stochastic(3)", "Stochastic(14)", "Williams Percent Range (14)"]]
+        self.df = data.drop(["log_Low_diff","log_Volume_diff", "log_High_diff", "log_Open_diff",  "log_Close_diff"],axis=1)
+        #self.df = data[['Date','Open', 'High', 'Low', 'Close',"CCI",'Volume',"EWMA_10", "EWMA_20", "EWMA_50", "EWMA_100", "rsi_14", "Momentum(10)", "MACD", "MA_(10)", "MA_(20)", "MA_(50)", "MA_(100)", "ADX", "+DMI","-DMI", "Stochastic(3)", "Stochastic(14)", "Williams Percent Range (14)"]]
         self.df=self.df.fillna(method='bfill')
 
-        self.stationary_df =data[["log_Low_diff","log_Volume_diff", "log_High_diff", "log_Open_diff",  "log_Close_diff", "CCI", "EWMA_10", "EWMA_20", "EWMA_50", "EWMA_100", "rsi_14", "Momentum(10)", "MACD", "MA_(10)", "MA_(20)", "MA_(50)", "MA_(100)", "ADX", "+DMI","-DMI", "Stochastic(3)", "Stochastic(14)", "Williams Percent Range (14)" ]]
+        self.stationary_df = data.drop(['Date','Open', 'High', 'Low', 'Close'],axis=1)
+        #self.stationary_df =data[["log_Low_diff","log_Volume_diff", "log_High_diff", "log_Open_diff",  "log_Close_diff", "CCI", "EWMA_10", "EWMA_20", "EWMA_50", "EWMA_100", "rsi_14", "Momentum(10)", "MACD", "MA_(10)", "MA_(20)", "MA_(50)", "MA_(100)", "ADX", "+DMI","-DMI", "Stochastic(3)", "Stochastic(14)", "Williams Percent Range (14)" ]]
         self.stationary_df=self.stationary_df.fillna(method='bfill')
 
         benchmarks = kwargs.get('benchmarks', [])
@@ -163,7 +165,7 @@ class TradingEnvironment(gym.Env):
 
     def _done(self):
        # if we have less than initial_balance /10 or we are in the last row of the dataframe then stop
-        return self.net_worths[-1] < self.initial_balance / 10 or self.current_step == len(self.df) - self.forecast_length - 1
+        return self.net_worths[-1] < self.initial_balance / 10 or self.current_step == len(self.df) - self.forecast_length - 2
 
     def reset(self):
         self.balance = self.initial_balance
