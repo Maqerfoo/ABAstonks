@@ -165,7 +165,7 @@ class TradingEnvironment(gym.Env):
 
     def _done(self):
        # if we have less than initial_balance /10 or we are in the last row of the dataframe then stop
-        return self.net_worths[-1] < self.initial_balance / 10 or self.current_step == len(self.df) - self.forecast_length - 2
+        return self.net_worths[-1] < self.initial_balance / 10 or self.current_step == len(self.df) - self.forecast_length - 1
 
     def reset(self):
         self.balance = self.initial_balance

@@ -191,7 +191,7 @@ class BitcoinTradingGraph:
         
 
         window_start = max(current_step - window_size, 0)
-        step_range = slice(window_start, current_step + 1)
+        step_range = slice(window_start, current_step)
         dates = self.df['Time'].values[step_range]
 
         self._render_net_worth(step_range, dates, current_step, net_worths, benchmarks,trades,net_worth,initial_net_worth,profit_percent)
