@@ -144,7 +144,6 @@ class TradingEnvironment(gym.Env):
         current_price_BTC = self.get_current_price_BTC()
         current_price_GOLD = self.get_current_price_GOLD()
 
-
         btc_bought = 0
         btc_sold = 0
         cost_btc = 0
@@ -157,32 +156,32 @@ class TradingEnvironment(gym.Env):
         self.current_weights=self.action_array[action]
         self.portfolio_change=self.current_weights-self.previous_weights
 
-      
+        net_worth = (self.balance + self.btc_held * current_price_BTC+ self.gold_held * current_price_GOLD)
 
         if(self.portfolio_change[0]<0): # we sold bitcoins
             price_BTC = current_price_BTC * (1 -self.commission)
-            btc_sold =self.balance* abs(self.portfolio_change[0])
+            btc_sold =net_worth* abs(self.portfolio_change[0])
             sales_btc = btc_sold * price_BTC
             self.btc_held -= btc_sold
             self.balance += sales_btc
 
         if(self.portfolio_change[1]<0): # we sold gold
             price_GOLD = current_price_GOLD * (1 -self.commission)
-            gold_sold =self.balance* abs(self.portfolio_change[1])
+            gold_sold =net_worth* abs(self.portfolio_change[1])
             sales_gold = gold_sold * price_GOLD
             self.gold_held -= gold_sold
             self.balance += sales_gold
 
         if(self.portfolio_change[0]>0): # we bought bitcoins
             price_BTC = current_price_BTC * (1 + self.commission)
-            btc_bought =self.balance* self.portfolio_change[0]
+            btc_bought =net_worth* self.portfolio_change[0]
             cost_btc=btc_bought*price_BTC
             self.btc_held += btc_bought
             self.balance -= cost_btc
 
         if(self.portfolio_change[1]>0): # we bought gold
             price_GOLD = current_price_GOLD * (1 + self.commission)
-            gold_bought =self.balance* self.portfolio_change[1]
+            gold_bought =net_worth* self.portfolio_change[1]
             cost_gold=gold_bought*price_GOLD
             self.gold_held += gold_bought
             self.balance -= cost_gold
