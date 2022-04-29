@@ -149,7 +149,7 @@ class TradingEnvironment(gym.Env):
         self.portfolio_change=self.current_weights-self.previous_weights
 
         net_worth = (self.balance + self.btc_held * current_price_BTC+ self.gold_held * current_price_GOLD)
-        print("net worth:", net_worth)
+
         if(self.portfolio_change[0]<0): # we sold bitcoins
             price_BTC = current_price_BTC * (1 -self.commission)
             sales_btc = net_worth* abs(self.portfolio_change[0])
