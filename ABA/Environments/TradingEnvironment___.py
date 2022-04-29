@@ -178,12 +178,6 @@ class TradingEnvironment(gym.Env):
             self.gold_held += gold_bought
             self.balance -= cost_gold
 
-        print("BTC sold: ",sales_btc)
-        print("Gold sold: ",sales_gold)
-        print("BTC bought: ",btc_bought)
-        print("BTC sold: ",gold_bought)
-        print("action: ", self.action_array[action])
-
         if btc_sold > 0 or btc_bought > 0:
             self.trades_btc.append({'step': self.current_step,
                                 'amount': btc_sold if btc_sold > 0 else btc_bought, 'total': sales_btc if btc_sold > 0 else cost_btc,
