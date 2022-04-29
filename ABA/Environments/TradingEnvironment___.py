@@ -13,7 +13,7 @@ import ABA.Environments.benchmarks.benchmarks
 importlib.reload(ABA.Environments.Render.Render_Graph)
 importlib.reload(ABA.Environments.benchmarks.benchmarks)
 from ABA.Environments.Render.Render_Graph import BitcoinTradingGraph
-from ABA.Environments.benchmarks.benchmarks import buy_and_hold, rsi_divergence, sma_crossover
+from ABA.Environments.benchmarks.benchmarks import buy_and_hold
 
 class TradingEnvironment(gym.Env):
 
