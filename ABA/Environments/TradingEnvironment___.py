@@ -157,35 +157,40 @@ class TradingEnvironment(gym.Env):
         self.portfolio_change=self.current_weights-self.previous_weights
 
         net_worth = (self.balance + self.btc_held * current_price_BTC+ self.gold_held * current_price_GOLD)
-
+        print("net worth:", net_worth)
         if(self.portfolio_change[0]<0): # we sold bitcoins
             price_BTC = current_price_BTC * (1 -self.commission)
-            btc_sold =net_worth* abs(self.portfolio_change[0])
-            sales_btc = btc_sold * price_BTC
+            sales_btc = net_worth* abs(self.portfolio_change[0])
+            btc_sold = sales_btc / price_BTC
             self.btc_held -= btc_sold
             self.balance += sales_btc
 
         if(self.portfolio_change[1]<0): # we sold gold
             price_GOLD = current_price_GOLD * (1 -self.commission)
-            gold_sold =net_worth* abs(self.portfolio_change[1])
-            sales_gold = gold_sold * price_GOLD
+            sales_gold = net_worth * abs(self.portfolio_change[1])
+            gold_sold = sales_gold / price_GOLD
             self.gold_held -= gold_sold
             self.balance += sales_gold
 
         if(self.portfolio_change[0]>0): # we bought bitcoins
             price_BTC = current_price_BTC * (1 + self.commission)
-            btc_bought =net_worth* self.portfolio_change[0]
-            cost_btc=btc_bought*price_BTC
+            cost_btc = net_worth* self.portfolio_change[0]
+            btc_bought = cost_btc / price_BTC
             self.btc_held += btc_bought
             self.balance -= cost_btc
 
         if(self.portfolio_change[1]>0): # we bought gold
             price_GOLD = current_price_GOLD * (1 + self.commission)
-            gold_bought =net_worth* self.portfolio_change[1]
-            cost_gold=gold_bought*price_GOLD
+            cost_gold = net_worth * self.portfolio_change[1]
+            gold_bought = cost_gold / price_GOLD
             self.gold_held += gold_bought
             self.balance -= cost_gold
 
+        print("BTC sold: ",sales_btc)
+        print("Gold sold: ",sales_gold)
+        print("BTC bought: ",btc_bought)
+        print("BTC sold: ",gold_bought)
+        print("action: ", self.action_array[action])
         
         if btc_sold > 0 or btc_bought > 0:
             self.trades_btc.append({'step': self.current_step,
@@ -198,7 +203,7 @@ class TradingEnvironment(gym.Env):
                                 'type': 'sell' if gold_sold > 0 else 'buy'})
 
         self.net_worths.append(self.balance + self.btc_held * current_price_BTC+ self.gold_held * current_price_GOLD)
-
+        #print(self.net_worths[self.current_step])
 
         self.account_history = np.append(self.account_history, [
             [self.balance],
