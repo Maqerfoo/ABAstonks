@@ -21,7 +21,7 @@ class TradingEnvironment(gym.Env):
     viewer = None
 
     def __init__(self, data, initial_balance=10000, commission=0.0025, reward_function='sortino', forecast_length=10, confidence_interval=0.95, **kwargs):
-        
+
         super(TradingEnvironment, self).__init__()
 
         self.initial_balance = initial_balance
@@ -40,28 +40,20 @@ class TradingEnvironment(gym.Env):
         self.stationary_df=self.stationary_df.fillna(method='ffill')
 
 
-        # benchmarks = kwargs.get('benchmarks', [])
+        benchmarks = kwargs.get('benchmarks', [])
 
-        # self.benchmarks = [
-        #     {
-        #         'label': 'Buy and HOLD',
-        #         'values': buy_and_hold(self.df['Close'], initial_balance, commission)
-        #     },
-        #     # {
-        #     #     'label': 'RSI Divergence',
-        #     #     'values': rsi_divergence(self.df['Close'], self.df["rsi_14"], initial_balance, commission)
-        #     # },
-        #     # {
-        #     #     'label': 'SMA Crossover',
-        #     #     'values': sma_crossover(self.df['Close'],self.df["MACD"] , initial_balance, commission)
-        #     # },
-        #     *benchmarks,
-        # ]
+        self.benchmarks = [
+            {
+                'label': 'Buy and HOLD',
+                'values': buy_and_hold(self.df['Close_BTC'], self.df['Close_GOLD'], initial_balance, commission)
+            },
+            *benchmarks,
+        ]
         self.forecast_length = forecast_length
         self.confidence_interval =confidence_interval
         self.obs_shape = (1, 9 + len(self.df.columns)-1 + (self.forecast_length * 6))
 
-        self.action_space = spaces.Discrete(18) 
+        self.action_space = spaces.Discrete(18)
         self.action_array=np.array([[1,0],
           [0,1],
           [0,0],
@@ -79,7 +71,7 @@ class TradingEnvironment(gym.Env):
           [0.5,0],
           [0.5,0.25],
           [0.5,0.33],
-          [0.5,0.5]])          
+          [0.5,0.5]])
 
         # Observes the price action, indicators, account action, price forecasts
         self.observation_space = spaces.Box(low=0, high=1, shape=self.obs_shape, dtype=np.float16)
@@ -91,7 +83,7 @@ class TradingEnvironment(gym.Env):
 
         scaled =self.stationary_df[:self.current_step + self.forecast_length + 1].values
         scaled[abs(scaled) == inf] = 0
-        
+
 
 
         scaled = scaler.fit_transform(scaled.astype('float64'))
@@ -99,7 +91,7 @@ class TradingEnvironment(gym.Env):
 
         obs = scaled.values[-1]
 
-        #Fit a SARIMMA model to the timeseries of the bitcoin prices 
+        #Fit a SARIMMA model to the timeseries of the bitcoin prices
         past_df_BTC = self.stationary_df['log_Close_diff_BTC'][: self.current_step + self.forecast_length + 1]
 
         forecast_model_BTC = SARIMAX(past_df_BTC.values, enforce_stationarity=False, simple_differencing=True)
@@ -109,7 +101,7 @@ class TradingEnvironment(gym.Env):
         obs = np.insert(obs, len(obs), forecast_BTC.predicted_mean, axis=0)
         obs = np.insert(obs, len(obs), forecast_BTC.conf_int().flatten(), axis=0)
 
-        #Fit a SARIMMA model to the timeseries of the gold prices 
+        #Fit a SARIMMA model to the timeseries of the gold prices
         past_df_GOLD = self.stationary_df['log_Close_diff_GOLD'][: self.current_step + self.forecast_length + 1]
 
         forecast_model_GOLD = SARIMAX(past_df_GOLD.values, enforce_stationarity=False, simple_differencing=True)
@@ -125,21 +117,21 @@ class TradingEnvironment(gym.Env):
         obs = np.insert(obs, len(obs), scaled_history[:, -1], axis=0)
 
         obs = np.reshape(obs.astype('float64'), self.obs_shape)
-        obs[np.bitwise_not(np.isfinite(obs))] = 0 
+        obs[np.bitwise_not(np.isfinite(obs))] = 0
         obs[np.isnan(obs)] = 0
 
         return obs
 
     #Get current BTC price
     def get_current_price_BTC(self):
-        return self.df['Close_BTC'].values[self.current_step + self.forecast_length] 
-    
+        return self.df['Close_BTC'].values[self.current_step + self.forecast_length]
+
     #Get current GOLD price
     def get_current_price_GOLD(self):
         return self.df['Close_GOLD'].values[self.current_step + self.forecast_length]
 
     def _take_action(self, action):
-        
+
         #Observe current price of BTC and GOLD
         current_price_BTC = self.get_current_price_BTC()
         current_price_GOLD = self.get_current_price_GOLD()
@@ -191,12 +183,12 @@ class TradingEnvironment(gym.Env):
         print("BTC bought: ",btc_bought)
         print("BTC sold: ",gold_bought)
         print("action: ", self.action_array[action])
-        
+
         if btc_sold > 0 or btc_bought > 0:
             self.trades_btc.append({'step': self.current_step,
                                 'amount': btc_sold if btc_sold > 0 else btc_bought, 'total': sales_btc if btc_sold > 0 else cost_btc,
                                 'type': 'sell' if btc_sold > 0 else 'buy'})
-        
+
         if gold_sold > 0 or gold_bought > 0:
             self.trades_gold.append({'step': self.current_step,
                                 'amount': gold_sold if gold_sold > 0 else gold_bought, 'total': sales_gold if gold_sold > 0 else cost_gold,
@@ -215,7 +207,7 @@ class TradingEnvironment(gym.Env):
             [cost_gold],
             [gold_sold],
             [sales_gold]], axis=1)
-        
+
         self.previous_weights=self.current_weights
 
     def _reward(self):
@@ -270,7 +262,7 @@ class TradingEnvironment(gym.Env):
     # type: 'sell' or 'buy' btc}
 
         self.trades_btc = []
-        
+
     # trades {step: current_step,
     # amount: gold_sold or gold_bought
     # total: sales or cost,
@@ -294,7 +286,7 @@ class TradingEnvironment(gym.Env):
 
         return obs, reward, done, {}
 
-    
+
     def render(self, mode='human'):
         if mode == 'system':
             print('Price: ' + str(self.get_current_price()))
@@ -304,11 +296,11 @@ class TradingEnvironment(gym.Env):
                 'Sold: ' + str(self.account_history[4][self.current_step]))
             print('Net worth: ' + str(self.net_worths[-1]))
         elif mode == 'human':
-            
+
             if self.viewer is None:
                 print(self.viewer)
                 self.viewer = BitcoinTradingGraph(self.df)
-                
+
             self.viewer.render(self.current_step, self.net_worths, self.benchmarks, self.trades_btc,self.trades_gold)
 
     def return_net_worth(self):
